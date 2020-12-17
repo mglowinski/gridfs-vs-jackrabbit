@@ -1,5 +1,6 @@
 package com.example.gridsfsvsjackrabbit.service;
 
+import com.example.gridsfsvsjackrabbit.model.RetrievedFile;
 import com.example.gridsfsvsjackrabbit.model.SavedFile;
 
 import javax.jcr.RepositoryException;
@@ -9,5 +10,5 @@ public interface StorageService {
 
 	SavedFile saveFile(String filename, String contentType, byte[] file) throws RepositoryException;
 
-	byte[] getFile(String id) throws RepositoryException, IOException;
+	RetrievedFile getFile(String id) throws RepositoryException, IOException;
 }

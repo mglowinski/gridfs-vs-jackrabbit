@@ -17,5 +17,4 @@ public class JackrabbitProperties {
 	private String login;
 	private String password;
 	private String directory;
-	private String imageFileName;
 }

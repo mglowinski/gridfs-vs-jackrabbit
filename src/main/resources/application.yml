@@ -1,3 +1,11 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 16MB
+      max-request-size: 16MB
+
 jackrabbit:
   url: http://${JACKRABBIT_HOST:localhost}:${JACKRABBIT_PORT:8887}/server
+  login: admin
+  password: admin
   directory: files

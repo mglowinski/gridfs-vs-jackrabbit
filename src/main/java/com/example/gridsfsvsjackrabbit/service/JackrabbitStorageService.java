@@ -1,5 +1,6 @@
 package com.example.gridsfsvsjackrabbit.service;
 
+import com.example.gridsfsvsjackrabbit.model.RetrievedFile;
 import com.example.gridsfsvsjackrabbit.model.SavedFile;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
@@ -25,12 +26,14 @@ public class JackrabbitStorageService implements StorageService {
 	private static final String JCR_LAST_MODIFIED = "jcr:lastModified";
 	private static final String NT_RESOURCE = "nt:resource";
 	private static final String NT_FILE = "nt:file";
+	private static final String PATH_TO_FILES = "/files/";
 
 	private final Node fileNode;
 
 	@Override
 	public SavedFile saveFile(String filename, String contentType, byte[] file) throws RepositoryException {
-		Node docNode = fileNode.addNode(filename, NT_FILE);
+		String uniqueFilename = String.valueOf(System.currentTimeMillis());
+		Node docNode = fileNode.addNode(uniqueFilename, NT_FILE);
 		Node contentNode = docNode.addNode(JCR_CONTENT, NT_RESOURCE);
 		Binary binary =
 				fileNode.getSession().getValueFactory().createBinary(
@@ -39,19 +42,20 @@ public class JackrabbitStorageService implements StorageService {
 		contentNode.setProperty(JCR_MIME_TYPE, contentType);
 		contentNode.setProperty(JCR_LAST_MODIFIED, Calendar.getInstance());
 		fileNode.getSession().save();
-		return new SavedFile(docNode.getPath());
+		return new SavedFile(uniqueFilename);
 	}
 
 	@Override
-	public byte[] getFile(String id) throws RepositoryException, IOException {
-		if (!fileNode.getSession().itemExists(id)) {
+	public RetrievedFile getFile(String id) throws RepositoryException, IOException {
+		if (!fileNode.getSession().itemExists(PATH_TO_FILES + id)) {
 			throw new FileNotFoundException(id);
 		}
-		Node docNode = fileNode.getSession().getNode(id);
+		Node docNode = fileNode.getSession().getNode(PATH_TO_FILES + id);
 		Node contentNode = docNode.getNode(JCR_CONTENT);
-		Value value = contentNode.getProperty(JCR_DATA).getValue();
-		InputStream stream = value.getBinary().getStream();
-		return IOUtils.toByteArray(stream);
+		Value fileValue = contentNode.getProperty(JCR_DATA).getValue();
+		Value contentTypeValue = contentNode.getProperty(JCR_MIME_TYPE).getValue();
+		InputStream stream = fileValue.getBinary().getStream();
+		return new RetrievedFile(IOUtils.toByteArray(stream), contentTypeValue.getString());
 	}
 
 }
